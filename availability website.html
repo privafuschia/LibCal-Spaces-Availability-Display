@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html style="max-width:850px; margin:auto;">
+
+<head>
+    <title>[space_name]</title>
+
+    <!-- gets the function that sets the html page (title, bg color, text) accordingly -->
+    <script src="website_function.js"></script>
+
+    <!-- gets the variables for the html page -->
+    <script src="html_format.js"></script>
+
+    <meta http-equiv="refresh" content="15">
+</head>
+
+<body onload="create_page()" style="font-size:46px; font-family:arial; font-weight:bold; background-color:#585191; text-align:center;">
+    <table>
+	<tr>
+	    <td>
+		<p id="space_name">[space_name]</p>
+		<p id="availability_message">[availability_message]</p>
+		<p id="current_time">[current_time]</p>
+	    </td>
+	    <td>
+		<figure class="item">
+		    <img src="qrcode.png" style="float:center; width:270px; height:270px;">
+		    <figcaption class="caption" style="font-size:23px;">scan to create booking</figcaption>
+		</figure>
+	    </td>
+
+	</tr>
+    </table>
+</body>
+
+</html>
