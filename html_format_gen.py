@@ -42,7 +42,7 @@ def bookings_list():
 
     # saves json file containing all bookings in the day
     bookingsfile = bookingsJSON.json()
-    with open('data.json', 'w') as file:
+    with open('bookings.json', 'w') as file:
         json.dump(bookingsfile, file)
 
     cleaned_bookings = []
@@ -82,23 +82,13 @@ def html_format():
     spacesJSON = requests.get('https://iit.libcal.com/1.1/space/item/116094?availability', headers=header)
     spaces = spacesJSON.json()
 
-    now = datetime.now()
-    global current_time
-    current_time = time_to_int(now.strftime("%H:%M"))
-
     # UNCOMMENT TO SAVE SPACES JSON TO FILE
-    # testfile = spacesJSON.json()
-    # with open('data.json', 'w') as f:
-    #     json.dump(testfile, f)
+    testfile = spacesJSON.json()
+    with open('spaces.json', 'w') as f:
+        json.dump(testfile, f)
 
     bookings = bookings_list()
-    open_time = time_24hr(spaces[0]["availability"][0]["from"])
-    closed_time = time_24hr(spaces[0]["availability"][-1]["to"])
 
-    html_format = {"bg_color":              "#585191", # purple
-                   "space_name":            spaces[0]["name"],
-                   "availability_message":  "error",
-    }
     print(current_time, ": current bookings:", bookings)
 
     # checks if there is a booking happening rn
@@ -108,10 +98,28 @@ def html_format():
 
         return (start_time <= current_time) and (current_time < end_time)
 
-    # if the current time is past closing time
-    if current_time > time_to_int(closed_time):
+    # opening and closing times for logic and messaging
+    if spaces[0]["availability"] != []:
+        open_time = time_24hr(spaces[0]["availability"][0]["from"])
+        closed_time = time_24hr(spaces[0]["availability"][-1]["to"])
+
+    html_format = {"bg_color":              "#585191", # purple
+                   "space_name":            spaces[0]["name"],
+                   "availability_message":  "error",
+    }
+
+    # if all time slots are booked
+    if (spaces[0]["availability"] == []) and (bookings != []):
         html_format["bg_color"] =             "#C1292E" # red
-        html_format["availability_message"] = "it is past" + time_12hr(closed_time) 
+        html_format["availability_message"] = "completely booked"
+    # if it is past closing time (inserts closing time if it exists)
+    elif spaces[0]["availability"] == []:
+        html_format["bg_color"] =             "#C1292E" # red
+        html_format["availability_message"] = "past closing" + (" " + time_12hr(closed_time) if (closed_time in locals()) else "")
+    # if the current time is before opening time
+    elif current_time < time_to_int(open_time):
+        html_format["bg_color"] =             "#C1292E" # red
+        html_format["availability_message"] = "come back at " + time_12hr(open_time)
     # if there are no bookings rn
     elif bookings == []:
         html_format["bg_color"] =             "#119822" # green
@@ -120,10 +128,6 @@ def html_format():
     elif check_unavailable(bookings):
         html_format["bg_color"] =             "#C1292E" # red
         html_format["availability_message"] = "in use to " + time_12hr(bookings[0][1])
-    # if the current time is before opening time
-    elif current_time < time_to_int(open_time):
-        html_format["bg_color"] =             "#C1292E" # red
-        html_format["availability_message"] = "come back at " + time_12hr(open_time)
     # if there is no booking rn, but there is one coming up
     else:
         html_format["bg_color"] =             "#119822" # green
@@ -131,14 +135,18 @@ def html_format():
     
     return html_format
 
+# start time and current time for use in telling if 55 mins has passed and other logic
 now = datetime.now()
-global current_time
-current_time = time_to_int(now.strftime("%H:%M"))
 start_time = time_to_int(now.strftime("%H:%M"))
+global current_time
 
 while True:
+    now = datetime.now()
+    current_time = time_to_int(now.strftime("%H:%M"))
+
     # generates access token for API use every 55 mins
     if (current_time - start_time) % 55 == 0:
+        print("generating access token!")
         responseJSON = requests.post('https://iit.libcal.com/1.1/oauth/token',data=data, stream=True)
         response = responseJSON.json()
         key = 'Bearer ' + response['access_token']
