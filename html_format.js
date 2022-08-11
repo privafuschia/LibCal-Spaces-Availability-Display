@@ -1,1 +1,0 @@
-var html_format = {'bg_color': '#119822', 'space_name': 'LTG A/V Studio', 'availability_message': 'available to 5:00 PM'}
