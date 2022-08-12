@@ -88,19 +88,11 @@ def html_format():
         json.dump(testfile, f)
 
     bookings = bookings_list()
-
     print(current_time, ": current bookings:", bookings)
-
-    # checks if there is a booking happening rn
-    def check_unavailable(bookings_list):
-        start_time = time_to_int(bookings_list[0][0])
-        end_time = time_to_int(bookings_list[0][1])
-
-        return (start_time <= current_time) and (current_time < end_time)
 
     # opening and closing times for logic and messaging
     if spaces[0]["availability"] != []:
-        open_time = time_24hr(spaces[0]["availability"][0]["from"])
+        next_open_time = time_24hr(spaces[0]["availability"][0]["from"])
         closed_time = time_24hr(spaces[0]["availability"][-1]["to"])
 
     html_format = {"bg_color":              "#585191", # purple
@@ -111,23 +103,19 @@ def html_format():
     # if all time slots are booked
     if (spaces[0]["availability"] == []) and (bookings != []):
         html_format["bg_color"] =             "#C1292E" # red
-        html_format["availability_message"] = "completely booked"
+        html_format["availability_message"] = "booked for the day"
     # if it is past closing time (inserts closing time if it exists)
     elif spaces[0]["availability"] == []:
         html_format["bg_color"] =             "#C1292E" # red
-        html_format["availability_message"] = "past closing" + (" " + time_12hr(closed_time) if (closed_time in locals()) else "")
+        html_format["availability_message"] = "past closing" + (" " + time_12hr(closed_time) if ("closed_time" in locals()) else "")
     # if the current time is before opening time
-    elif current_time < time_to_int(open_time):
+    elif current_time < time_to_int(next_open_time):
         html_format["bg_color"] =             "#C1292E" # red
-        html_format["availability_message"] = "come back at " + time_12hr(open_time)
+        html_format["availability_message"] = "available at " + time_12hr(next_open_time)
     # if there are no bookings rn
     elif bookings == []:
         html_format["bg_color"] =             "#119822" # green
         html_format["availability_message"] = "available to " + time_12hr(closed_time)
-    # if the current time is in the middle of a booking
-    elif check_unavailable(bookings):
-        html_format["bg_color"] =             "#C1292E" # red
-        html_format["availability_message"] = "in use to " + time_12hr(bookings[0][1])
     # if there is no booking rn, but there is one coming up
     else:
         html_format["bg_color"] =             "#119822" # green
@@ -152,9 +140,10 @@ while True:
         key = 'Bearer ' + response['access_token']
         header = {'Authorization': key}
 
-    file = open('html_format.js', 'w')
+    html_format_file = open('html_format.js', 'w')
     html_format_js = "var html_format = " + str(html_format())
-    file.write(html_format_js)
-    
+    html_format_file.write(html_format_js)
+    html_format_file.close()
+
     time.sleep(60)
 
