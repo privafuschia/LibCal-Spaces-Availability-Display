@@ -135,7 +135,7 @@ while True:
     key = 'Bearer ' + response['access_token']
     header = {'Authorization': key}
 
-    # creates / updates html_format.js file containing information for the html page
+    # creates/updates html_format.js file containing information for the html page
     html_format_file = open('html_format.js', 'w')
     html_format_js = "var html_format = " + str(html_format())
     html_format_file.write(html_format_js)
