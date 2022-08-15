@@ -40,9 +40,9 @@ def bookings_list():
     bookingsJSON = requests.get('https://iit.libcal.com/1.1/space/bookings?eid=116094', headers=header)
     bookings = bookingsJSON.json()
 
-    # saves json file containing all bookings in the day
+    # saves json file containing all bookings in the day (FOR TROUBLESHOOTING)
     bookingsfile = bookingsJSON.json()
-    with open('data.json', 'w') as file:
+    with open('bookings.json', 'w') as file:
         json.dump(bookingsfile, file)
 
     cleaned_bookings = []
@@ -82,48 +82,40 @@ def html_format():
     spacesJSON = requests.get('https://iit.libcal.com/1.1/space/item/116094?availability', headers=header)
     spaces = spacesJSON.json()
 
-    now = datetime.now()
-    global current_time
-    current_time = time_to_int(now.strftime("%H:%M"))
-
-    # UNCOMMENT TO SAVE SPACES JSON TO FILE
-    # testfile = spacesJSON.json()
-    # with open('data.json', 'w') as f:
-    #     json.dump(testfile, f)
+    # saves json file containing all available time blocks in the day (FOR TROUBLESHOOTING)
+    spacesfile = spacesJSON.json()
+    with open('spaces.json', 'w') as f:
+        json.dump(spacesfile, f)
 
     bookings = bookings_list()
-    open_time = time_24hr(spaces[0]["availability"][0]["from"])
-    closed_time = time_24hr(spaces[0]["availability"][-1]["to"])
+    print(current_time, ": current bookings:", bookings)
+
+    # opening and closing times for logic and messaging
+    if spaces[0]["availability"] != []:
+        next_open_time = time_24hr(spaces[0]["availability"][0]["from"])
+        closed_time = time_24hr(spaces[0]["availability"][-1]["to"])
 
     html_format = {"bg_color":              "#585191", # purple
                    "space_name":            spaces[0]["name"],
                    "availability_message":  "error",
     }
-    print(current_time, ": current bookings:", bookings)
 
-    # checks if there is a booking happening rn
-    def check_unavailable(bookings_list):
-        start_time = time_to_int(bookings_list[0][0])
-        end_time = time_to_int(bookings_list[0][1])
-
-        return (start_time <= current_time) and (current_time < end_time)
-
-    # if the current time is past closing time
-    if current_time > time_to_int(closed_time):
+    # if all time slots are booked
+    if (spaces[0]["availability"] == []) and (bookings != []):
         html_format["bg_color"] =             "#C1292E" # red
-        html_format["availability_message"] = "it is past" + time_12hr(closed_time) 
+        html_format["availability_message"] = "booked for the day"
+    # if it is past closing time (inserts closing time if it exists)
+    elif spaces[0]["availability"] == []:
+        html_format["bg_color"] =             "#C1292E" # red
+        html_format["availability_message"] = "past closing" + (" " + time_12hr(closed_time) if ("closed_time" in locals()) else "")
+    # if the current time is before opening time
+    elif current_time < time_to_int(next_open_time):
+        html_format["bg_color"] =             "#C1292E" # red
+        html_format["availability_message"] = "available at " + time_12hr(next_open_time)
     # if there are no bookings rn
     elif bookings == []:
         html_format["bg_color"] =             "#119822" # green
         html_format["availability_message"] = "available to " + time_12hr(closed_time)
-    # if the current time is in the middle of a booking
-    elif check_unavailable(bookings):
-        html_format["bg_color"] =             "#C1292E" # red
-        html_format["availability_message"] = "in use to " + time_12hr(bookings[0][1])
-    # if the current time is before opening time
-    elif current_time < time_to_int(open_time):
-        html_format["bg_color"] =             "#C1292E" # red
-        html_format["availability_message"] = "come back at " + time_12hr(open_time)
     # if there is no booking rn, but there is one coming up
     else:
         html_format["bg_color"] =             "#119822" # green
@@ -131,22 +123,23 @@ def html_format():
     
     return html_format
 
-now = datetime.now()
+# looping logic to keep html page with information up to date
 global current_time
-current_time = time_to_int(now.strftime("%H:%M"))
-start_time = time_to_int(now.strftime("%H:%M"))
-
 while True:
-    # generates access token for API use every 55 mins
-    if (current_time - start_time) % 55 == 0:
-        responseJSON = requests.post('https://iit.libcal.com/1.1/oauth/token',data=data, stream=True)
-        response = responseJSON.json()
-        key = 'Bearer ' + response['access_token']
-        header = {'Authorization': key}
+    now = datetime.now()
+    current_time = time_to_int(now.strftime("%H:%M"))
 
-    file = open('html_format.js', 'w')
+    # generates assess key
+    responseJSON = requests.post('https://iit.libcal.com/1.1/oauth/token',data=data, stream=True)
+    response = responseJSON.json()
+    key = 'Bearer ' + response['access_token']
+    header = {'Authorization': key}
+
+    # creates / updates html_format.js file containing information for the html page
+    html_format_file = open('html_format.js', 'w')
     html_format_js = "var html_format = " + str(html_format())
-    file.write(html_format_js)
-    
+    html_format_file.write(html_format_js)
+    html_format_file.close()
+
     time.sleep(60)
 

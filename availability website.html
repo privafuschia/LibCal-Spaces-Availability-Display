@@ -14,13 +14,16 @@
 </head>
 
 <body onload="create_page()" style="font-size:60px; font-family:arial; font-weight:bold; background-color:#585191; text-align:center;">
+	<!-- creates a centered table with 2 columns -->
     <table style="margin:auto;">
 	<tr>
+		<!-- left column: general information -->
 	    <td>
-		<p id="space_name">[space_name]</p>
-		<p id="availability_message">[availability_message]</p>
-		<p id="current_time">[current_time]</p>
+		<p id="space_name">				[space_name]</p>
+		<p id="availability_message">	[availability_message]</p>
+		<p id="current_time">			[current_time]</p>
 	    </td>
+		<!-- right column: qr code -->
 	    <td>
 		<figure class="item">
 		    <img src="qrcode.png" style="float:center; width:180px; height:180px;">
