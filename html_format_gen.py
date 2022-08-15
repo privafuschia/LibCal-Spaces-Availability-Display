@@ -92,8 +92,12 @@ def html_format():
 
     # opening and closing times for logic and messaging
     if spaces[0]["availability"] != []:
+        next_print(current_time, ": current bookings:", bookings)
+
+    # opening and closing times for logic and messaging
+    if spaces[0]["availability"] != []:
         next_open_time = time_24hr(spaces[0]["availability"][0]["from"])
-        closed_time = time_24hr(spaces[0]["availability"][-1]["to"])
+            closed_time = time_24hr(spaces[0]["availability"][-1]["to"])
 
     html_format = {"bg_color":              "#585191", # purple
                    "space_name":            spaces[0]["name"],
