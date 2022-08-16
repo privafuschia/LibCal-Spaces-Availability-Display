@@ -1,6 +1,7 @@
 import requests, json
 import time
-from datetime import datetime
+from datetime import datetime, date
+import logging
 
 data = {'client_id': 1020,
       'client_secret': 'e7b829ed7dbf7d70e980c1fbbd85b9c9',
@@ -20,8 +21,8 @@ def time_24hr(time):
     return time[11:16]
 
 # converts 24hr (ex. 13:37) time to 12hr time with am/pm (1:37 pm)
-def time_12hr(time):
-    hours = int(time[0:2])
+def time_12hr(time24hr):
+    hours = int(time24hr[0:2])
     ampm = " AM"
 
     if hours >= 12:
@@ -29,7 +30,7 @@ def time_12hr(time):
     if hours > 12:
          hours -= 12
     
-    return (str(hours) + ":" + time[3:5] + ampm)
+    return (str(hours) + ":" + time24hr[3:5] + ampm)
 
 # returns a list of bookings with:
 # simplified time format
@@ -87,8 +88,8 @@ def html_format():
     with open('spaces.json', 'w') as f:
         json.dump(spacesfile, f)
 
+    global bookings
     bookings = bookings_list()
-    print(current_time, ": current bookings:", bookings)
 
     # opening and closing times for logic and messaging
     if spaces[0]["availability"] != []:
@@ -123,10 +124,11 @@ def html_format():
     
     return html_format
 
+print("running!")
 # looping logic to keep html page with information up to date
-global current_time
 while True:
     now = datetime.now()
+    global current_time
     current_time = time_to_int(now.strftime("%H:%M"))
 
     # generates assess key
@@ -137,9 +139,14 @@ while True:
 
     # creates/updates html_format.js file containing information for the html page
     html_format_file = open('html_format.js', 'w')
-    html_format_js = "var html_format = " + str(html_format())
+    html_format_data = str(html_format())
+    html_format_js = "var html_format = " + html_format_data
     html_format_file.write(html_format_js)
     html_format_file.close()
+
+    # LOGGING
+    logging.basicConfig(filename="libcal_display.log", level=logging.INFO)
+    logging.info(str(datetime.now()) + " - bookings: " + str(bookings) + " - display data: " + html_format_data)
 
     time.sleep(60)
 
