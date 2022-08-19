@@ -1,0 +1,18 @@
+body {
+    font-size:60px;
+    font-family:arial;
+    font-weight:bold;
+    background-color:#585191;
+    text-align:center;
+}
+table {
+    margin:auto;
+}
+img {
+    float:center;
+    width:180px;
+    height:180px;
+}
+figcaption {
+    font-size:30px;
+}

@@ -1,6 +1,6 @@
 import requests, json
 import time
-from datetime import datetime, date
+from datetime import datetime
 import logging
 
 data = {'client_id': 1020,
@@ -94,13 +94,13 @@ def html_format():
     # opening and closing times for logic and messaging
     if spaces[0]["availability"] != []:
         next_open_time = time_24hr(spaces[0]["availability"][0]["from"])
+        global closed_time
         closed_time = time_24hr(spaces[0]["availability"][-1]["to"])
 
     html_format = {"bg_color":              "#585191", # purple
                    "space_name":            spaces[0]["name"],
                    "availability_message":  "error",
     }
-
     # if all time slots are booked
     if (spaces[0]["availability"] == []) and (bookings != []):
         html_format["bg_color"] =             "#C1292E" # red
@@ -108,7 +108,7 @@ def html_format():
     # if it is past closing time (inserts closing time if it exists)
     elif spaces[0]["availability"] == []:
         html_format["bg_color"] =             "#C1292E" # red
-        html_format["availability_message"] = "past closing" + (" " + time_12hr(closed_time) if ("closed_time" in locals()) else "")
+        html_format["availability_message"] = "closed" + (" @ " + time_12hr(closed_time) if ("closed_time" in globals()) else "")
     # if the current time is before opening time
     elif current_time < time_to_int(next_open_time):
         html_format["bg_color"] =             "#C1292E" # red
@@ -125,6 +125,8 @@ def html_format():
     return html_format
 
 print("running!")
+logging.basicConfig(filename="libcal_display.log", level=logging.INFO)
+logging.info("<-- NEW SESSION -->")
 # looping logic to keep html page with information up to date
 while True:
     now = datetime.now()
@@ -145,7 +147,6 @@ while True:
     html_format_file.close()
 
     # LOGGING
-    logging.basicConfig(filename="libcal_display.log", level=logging.INFO)
     logging.info(str(datetime.now()) + " - bookings: " + str(bookings) + " - display data: " + html_format_data)
 
     time.sleep(60)
