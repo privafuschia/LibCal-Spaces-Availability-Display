@@ -38,7 +38,7 @@ def time_12hr(time24hr):
 # back to back listings combined
 def bookings_list():
 
-    bookingsJSON = requests.get('https://iit.libcal.com/1.1/space/bookings?eid=116094', headers=header)
+    bookingsJSON = requests.get('https://iit.libcal.com/1.1/space/bookings?eid=104617', headers=header)
     bookings = bookingsJSON.json()
 
     # saves json file containing all bookings in the day (FOR TROUBLESHOOTING)
@@ -80,7 +80,7 @@ def bookings_list():
 
 # this function will return a dictionary with all the formattings for the html
 def html_format():
-    spacesJSON = requests.get('https://iit.libcal.com/1.1/space/item/116094?availability', headers=header)
+    spacesJSON = requests.get('https://iit.libcal.com/1.1/space/item/104617?availability', headers=header)
     spaces = spacesJSON.json()
 
     # saves json file containing all available time blocks in the day (FOR TROUBLESHOOTING)
