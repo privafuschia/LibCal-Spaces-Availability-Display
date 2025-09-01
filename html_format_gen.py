@@ -3,8 +3,8 @@ import time
 from datetime import datetime
 import logging
 
-data = {'client_id': 1020,
-      'client_secret': 'e7b829ed7dbf7d70e980c1fbbd85b9c9',
+data = {'client_id': 888,
+      'client_secret': '888',
       'grant_type': 'client_credentials'}
 
 # converts a 24hr time (ex. 13:37) to mins since 0:00 (ex. 817) for easy math
